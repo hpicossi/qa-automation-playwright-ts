@@ -25,7 +25,9 @@ Framework de automatización profesional con CPOM, API testing, visual regressio
   /visual
 /pages
   /components
+    /search-bar.component.ts
   /base.page.ts
+  /home.page.ts
 /data
 /utils
   /api

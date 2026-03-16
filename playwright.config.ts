@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const isHeadless = process.env.HEADLESS !== 'false';
-const baseURL = process.env.BASE_URL ?? 'https://demo.playwright.dev';
+const baseURL = process.env.BASE_URL ?? 'http://localhost:3000';
 
 export default defineConfig({
   testDir: '.',
