@@ -9,7 +9,7 @@ export class NavbarComponent {
   constructor(page: Page) {
     this.page = page;
     this.homeLink = page.getByRole('link', { name: /home/i });
-    this.accountMenu = page.getByRole('button', { name: /account|profile/i });
+    this.accountMenu = page.getByRole('button', { name: /show\/hide account menu|account|profile/i });
     this.cartButton = page.getByRole('button', { name: /cart/i });
   }
 

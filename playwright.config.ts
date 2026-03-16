@@ -36,19 +36,36 @@ export default defineConfig({
   },
   projects: [
     {
+      name: 'setup',
+      testMatch: ['tests/setup/**/*.setup.ts']
+    },
+    {
       name: 'chromium',
+      testIgnore: ['tests/setup/**/*.setup.ts', 'tests/e2e/authenticated-*.spec.ts'],
       use: { ...devices['Desktop Chrome'] }
     },
     {
+      name: 'chromium-auth',
+      testMatch: ['tests/e2e/authenticated-*.spec.ts'],
+      dependencies: ['setup'],
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'playwright/.auth/customer.json'
+      }
+    },
+    {
       name: 'firefox',
+      testIgnore: ['tests/setup/**/*.setup.ts', 'tests/e2e/authenticated-*.spec.ts'],
       use: { ...devices['Desktop Firefox'] }
     },
     {
       name: 'webkit',
+      testIgnore: ['tests/setup/**/*.setup.ts', 'tests/e2e/authenticated-*.spec.ts'],
       use: { ...devices['Desktop Safari'] }
     },
     {
       name: 'mobile-chromium',
+      testIgnore: ['tests/setup/**/*.setup.ts', 'tests/e2e/authenticated-*.spec.ts'],
       use: {
         ...devices['Pixel 7'],
         viewport: { width: 412, height: 915 }
@@ -56,6 +73,7 @@ export default defineConfig({
     },
     {
       name: 'mobile-webkit',
+      testIgnore: ['tests/setup/**/*.setup.ts', 'tests/e2e/authenticated-*.spec.ts'],
       use: {
         ...devices['iPhone 14'],
         viewport: { width: 390, height: 844 }

@@ -2,12 +2,13 @@ import { APIRequestContext, APIResponse, expect, request } from '@playwright/tes
 import Ajv, { JSONSchemaType } from 'ajv';
 
 export interface AuthPayload {
-  username: string;
+  email?: string;
+  username?: string;
   password: string;
 }
 
 export class BaseApiClient {
-  private context!: APIRequestContext;
+  protected context!: APIRequestContext;
   private token: string | null = null;
   private readonly ajv = new Ajv();
 
@@ -57,6 +58,13 @@ export class BaseApiClient {
 
     await this.assertOk(response);
     return (await response.json()) as T;
+  }
+
+  async postRaw(path: string, body: unknown, authorized = true): Promise<APIResponse> {
+    return this.context.post(path, {
+      data: body,
+      headers: this.buildAuthHeaders(authorized)
+    });
   }
 
   validateSchema<T>(schema: JSONSchemaType<T>, data: unknown): void {

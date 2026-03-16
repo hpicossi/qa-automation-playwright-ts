@@ -1,50 +1,51 @@
 # QA Automation Framework | Playwright + TypeScript
 
-Framework de automatización profesional con CPOM, API testing, visual regression, preparación AI-ready y CI/CD.
+Framework de automatización profesional con CPOM, API testing, visual regression, sesión autenticada reusable, preparación AI-ready y CI/CD.
 
-## Branding para GitHub (recomendado)
+## Branding para GitHub
 
 - **Nombre del repo:** `qa-automation-playwright-ts`
-- **Descripción corta (About):** `Senior-style QA Automation Framework with Playwright + TypeScript, CPOM, API validation, visual regression, Allure, and GitHub Actions.`
-- **Topics (tags):** `playwright`, `typescript`, `qa-automation`, `e2e-testing`, `api-testing`, `visual-regression`, `allure-report`, `github-actions`, `sdet`, `test-automation`
+- **Descripción corta:** `Senior-style QA Automation Framework with Playwright + TypeScript, CPOM, API validation, visual regression, reusable auth sessions, Allure, and GitHub Actions.`
+- **Topics:** `playwright`, `typescript`, `qa-automation`, `e2e-testing`, `api-testing`, `visual-regression`, `allure-report`, `github-actions`, `sdet`, `test-automation`
 
-## Valor profesional (para reclutadores)
+## Valor profesional
 
-- Arquitectura CPOM (páginas + componentes reutilizables).
-- Pruebas híbridas UI + API + visual en un mismo flujo E2E.
-- Contratos API con JWT y validación JSON Schema.
-- Ejecución paralela multi-browser y mobile emulation.
-- CI/CD con artefactos de reporte para debugging.
+- Arquitectura CPOM con páginas y componentes reutilizables.
+- Flujos híbridos UI + API + visual.
+- Validación de contratos API con JWT y JSON Schema.
+- Sesión autenticada reusable con `storageState` generado por setup.
+- Ejecución cross-browser y mobile emulation.
+- CI/CD con reportes HTML y Allure.
 
 ## Estructura
 
 ```text
 /tests
-  /e2e
   /api
+  /e2e
+    authenticated-account.spec.ts
+    hybrid-ui-api-visual.spec.ts
+  /setup
+    auth.setup.ts
   /visual
 /pages
   /components
-    /search-bar.component.ts
-  /base.page.ts
-  /home.page.ts
+    account-menu.component.ts
+    navbar.component.ts
+    search-bar.component.ts
+  base.page.ts
+  home.page.ts
+  login.page.ts
 /data
+  /schemas
 /utils
-  /api
   /ai
+  /api
   /visual
 /.github/workflows
 playwright.config.ts
+docker-compose.yml
 ```
-
-## Flujo por partes (commits recomendados)
-
-1. `chore: bootstrap framework base (config + ts + lint)`
-2. `feat: implement CPOM (pages + reusable components)`
-3. `feat: add API base client with JWT + schema validation`
-4. `feat: add visual + AI-ready locator strategy`
-5. `ci: add github actions + allure artifacts`
-6. `test: add hybrid e2e sample (ui + api + visual)`
 
 ## Setup
 
@@ -55,12 +56,14 @@ npm run prepare
 copy .env.example .env
 ```
 
-## Target real recomendado (Parte 2)
+## Entorno recomendado
 
 - `BASE_URL=http://localhost:3000`
 - `API_BASE_URL=http://localhost:3000`
+- `AUTH_EMAIL=qa.portfolio@example.com`
+- `AUTH_PASSWORD=Password123!`
 
-## Levantar app local estable (recomendado)
+## Levantar app local
 
 Prerequisito: Docker Desktop iniciado.
 
@@ -68,7 +71,7 @@ Prerequisito: Docker Desktop iniciado.
 npm run app:up
 ```
 
-Valida que esté disponible en `http://localhost:3000`.
+Abrir en `http://localhost:3000`.
 
 Para apagar:
 
@@ -76,25 +79,29 @@ Para apagar:
 npm run app:down
 ```
 
-## Ejecución
+## Comandos principales
 
 ```bash
 npm test
 npm run test:local
+npm run test:auth
 npm run test:mobile
 npm run test:api
 npm run test:visual
-npx playwright test tests/e2e/hybrid-ui-api-visual.spec.ts --project=chromium --headed
 ```
-
-Si el test headed falla, normalmente es porque la app local no está levantada.
 
 ## Comandos recomendados por escenario
 
-### Demo en vivo (navegador visible)
+### Demo en vivo del flujo híbrido
 
 ```bash
 npx playwright test --project=chromium --headed --grep "hybrid flow"
+```
+
+### Demo autenticada con sesión reusable
+
+```bash
+npm run test:auth -- --headed
 ```
 
 ### Ejecución tipo CI / local headless
@@ -103,7 +110,7 @@ npx playwright test --project=chromium --headed --grep "hybrid flow"
 npx playwright test --project=chromium --grep "hybrid flow"
 ```
 
-### Regenerar baseline visual cuando cambie la UI intencionalmente
+### Regenerar baseline visual
 
 ```bash
 npm run test:update-snapshots
@@ -115,22 +122,36 @@ npm run test:update-snapshots
 npx playwright show-report
 ```
 
-Fallback temporal (si Docker no está disponible):
+## Fallback temporal
+
+Si Docker no está disponible:
 
 - `BASE_URL=https://demo.owasp-juice.shop`
 - `API_BASE_URL=https://demo.owasp-juice.shop`
 
-## Appium (integración conceptual)
+## Appium
 
 La integración para pruebas nativas se separa en `mobile/appium/` como capa paralela al framework de Playwright.
 
-## Texto listo para LinkedIn (copy/paste)
+## Commits recomendados por partes
+
+1. `chore: bootstrap framework base (config + ts + lint)`
+2. `feat: implement CPOM (pages + reusable components)`
+3. `feat: add API base client with JWT + schema validation`
+4. `feat: add visual + AI-ready locator strategy`
+5. `feat: integrate local Juice Shop hybrid flow`
+6. `feat: add HomePage and SearchBar CPOM`
+7. `feat: add reusable authenticated session with storageState`
+8. `ci: add github actions + allure artifacts`
+
+## Texto listo para LinkedIn
 
 Hoy terminé un proyecto de automatización QA con enfoque Senior usando Playwright + TypeScript.
 
 Qué implementé:
 - Arquitectura Component Page Object Model (CPOM).
 - Flujos híbridos E2E: UI + API (JWT + JSON Schema) + Visual Regression.
+- Sesión autenticada reusable generada por setup vía API y `storageState`.
 - Ejecución cross-browser + mobile emulation.
 - CI con GitHub Actions y reportes Allure.
 

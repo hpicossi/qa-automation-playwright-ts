@@ -1,15 +1,18 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 import { BasePage } from './base.page';
+import { AccountMenuComponent } from './components/account-menu.component';
 import { NavbarComponent } from './components/navbar.component';
 import { SearchBarComponent } from './components/search-bar.component';
 import { resolveSelfHealingLocator } from '../utils/ai/self-healing-locator';
 
 export class HomePage extends BasePage {
+  readonly accountMenu: AccountMenuComponent;
   readonly navbar: NavbarComponent;
   readonly searchBar: SearchBarComponent;
 
   constructor(page: Page) {
     super(page);
+    this.accountMenu = new AccountMenuComponent(page);
     this.navbar = new NavbarComponent(page);
     this.searchBar = new SearchBarComponent(page);
   }
@@ -71,6 +74,12 @@ export class HomePage extends BasePage {
   async expectProductVisible(productName: string): Promise<void> {
     const product = await this.findProductCard(productName);
     await expect(product).toBeVisible();
+  }
+
+  async assertAuthenticated(): Promise<void> {
+    await this.navbar.openAccount();
+    await this.accountMenu.expectProfileVisible();
+    await this.accountMenu.expectLogoutVisible();
   }
 
   private async dismissOptional(candidates: Array<{ name: string; build: (page: Page) => Locator }>): Promise<void> {
