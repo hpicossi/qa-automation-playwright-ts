@@ -133,6 +133,20 @@ Si Docker no está disponible:
 
 La integración para pruebas nativas se separa en `mobile/appium/` como capa paralela al framework de Playwright.
 
+## CI/CD (GitHub Actions)
+
+Pipeline configurado en [main.yml](.github/workflows/main.yml):
+
+- **Quality gate:** `lint` + `format:check` + `typecheck`.
+- **Ejecución paralela por suites:** `api`, `hybrid`, `auth`.
+- **Infra en CI:** levanta Juice Shop con `docker compose up -d`.
+- **Artefactos:** `playwright-report`, `test-results`, `allure-results` por suite.
+
+Nota sobre visual en CI:
+
+- En CI se ejecuta con `ENABLE_VISUAL=false` para evitar falsos positivos cross-OS.
+- Para validar visual en CI, activar `ENABLE_VISUAL=true` y mantener baselines del runner objetivo.
+
 ## Commits recomendados por partes
 
 1. `chore: bootstrap framework base (config + ts + lint)`
@@ -143,6 +157,7 @@ La integración para pruebas nativas se separa en `mobile/appium/` como capa par
 6. `feat: add HomePage and SearchBar CPOM`
 7. `feat: add reusable authenticated session with storageState`
 8. `ci: add github actions + allure artifacts`
+9. `ci: add quality gate + local app orchestration + parallel suites`
 
 ## Texto listo para LinkedIn
 

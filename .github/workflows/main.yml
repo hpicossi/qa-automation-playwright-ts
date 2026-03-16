@@ -1,4 +1,4 @@
-name: e2e-framework-ci
+name: qa-automation-ci
 
 on:
   push:
@@ -7,12 +7,8 @@ on:
     branches: [main, develop]
 
 jobs:
-  playwright:
+  quality-gate:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        project: [chromium, firefox, webkit, mobile-chromium, mobile-webkit]
 
     steps:
       - name: Checkout
@@ -27,17 +23,72 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Lint
+        run: npm run lint
+
+      - name: Format check
+        run: npm run format:check
+
+      - name: Type check
+        run: npm run typecheck
+
+  playwright:
+    needs: quality-gate
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [api, hybrid, auth]
+
+    env:
+      BASE_URL: http://localhost:3000
+      API_BASE_URL: http://localhost:3000
+      AUTH_EMAIL: qa.portfolio@example.com
+      AUTH_PASSWORD: Password123!
+      CI: true
+      ENABLE_VISUAL: false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Start Juice Shop
+        run: docker compose up -d
+
+      - name: Wait for Juice Shop readiness
+        run: |
+          for i in {1..30}; do
+            if curl -sSf http://localhost:3000 > /dev/null; then
+              echo "Juice Shop is ready"
+              exit 0
+            fi
+            echo "Waiting for Juice Shop..."
+            sleep 5
+          done
+          echo "Juice Shop failed to start"
+          docker compose logs
+          exit 1
+
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
-      - name: Run tests in parallel by project
-        run: npx playwright test --project=${{ matrix.project }}
+      - name: Run tests by suite
+        run: npm run test:ci:${{ matrix.suite }}
 
       - name: Upload Playwright report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report-${{ matrix.project }}
+          name: playwright-report-${{ matrix.suite }}
           path: |
             playwright-report
             test-results
@@ -46,5 +97,9 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: allure-results-${{ matrix.project }}
+          name: allure-results-${{ matrix.suite }}
           path: allure-results
+
+      - name: Stop Juice Shop
+        if: always()
+        run: docker compose down
