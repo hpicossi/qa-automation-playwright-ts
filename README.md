@@ -50,7 +50,15 @@ playwright.config.ts
 npm install
 npx playwright install --with-deps
 npm run prepare
+copy .env.example .env
 ```
+
+## Target real recomendado (Parte 2)
+
+- `BASE_URL=https://demo.owasp-juice.shop`
+- `API_BASE_URL=https://demo.owasp-juice.shop`
+
+El flujo híbrido usa endpoint público de productos para que puedas ejecutar demo sin credenciales privadas.
 
 ## Ejecución
 
@@ -59,6 +67,7 @@ npm test
 npm run test:mobile
 npm run test:api
 npm run test:visual
+npx playwright test tests/e2e/hybrid-ui-api-visual.spec.ts --project=chromium --headed
 ```
 
 ## Appium (integración conceptual)

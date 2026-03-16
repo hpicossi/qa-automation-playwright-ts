@@ -1,52 +1,78 @@
 import { test, expect } from '@playwright/test';
-import { LoginPage } from '../../pages/login.page';
-import { users } from '../../data/users';
 import { BaseApiClient } from '../../utils/api/base-api.client';
-import { authTokenSchema, type AuthTokenResponse } from '../../data/schemas/auth-token.schema';
+import { productSearchSchema, type ProductSearchResponse } from '../../data/schemas/product-search.schema';
 import { expectPageVisualMatch } from '../../utils/visual/visual-checks';
 import { resolveSelfHealingLocator } from '../../utils/ai/self-healing-locator';
 
-test('hybrid flow: API auth + UI login + visual baseline', async ({ page }) => {
-  const api = new BaseApiClient(process.env.API_BASE_URL ?? process.env.BASE_URL ?? '');
+test('hybrid flow: API products + UI search + visual baseline', async ({ page }) => {
+  const apiBaseUrl = process.env.API_BASE_URL ?? process.env.BASE_URL ?? 'https://demo.owasp-juice.shop';
+
+  try {
+    const probe = await fetch(`${apiBaseUrl}/rest/products/search?q=apple`);
+    test.skip(probe.status >= 500, `Public demo unavailable (status: ${probe.status})`);
+  } catch {
+    test.skip(true, 'Public demo unavailable (network error)');
+  }
+
+  const api = new BaseApiClient(apiBaseUrl);
   await api.init();
 
-  const authResponse = await api.post<AuthTokenResponse>(
-    '/auth/login',
+  const apiResponse = await api.get<ProductSearchResponse>('/rest/products/search?q=apple', false);
+  api.validateSchema(productSearchSchema, apiResponse);
+  expect(apiResponse.data.length).toBeGreaterThan(0);
+
+  await page.goto('/#/');
+
+  const dismissCookieButton = await resolveSelfHealingLocator(page, [
     {
-      username: users.standard.username,
-      password: users.standard.password
-    },
-    false
-  );
-
-  api.validateSchema(authTokenSchema, authResponse);
-  api.setToken(authResponse.token);
-
-  await page.addInitScript((token: string) => {
-    window.localStorage.setItem('jwt', token);
-  }, authResponse.token);
-
-  const loginPage = new LoginPage(page);
-  await loginPage.goto();
-  await loginPage.login(users.standard);
-
-  const dashboardAnchor = await resolveSelfHealingLocator(page, [
-    {
-      name: 'dashboard test id',
-      build: (currentPage) => currentPage.getByTestId('dashboard-title')
+      name: 'cookie accept button',
+      build: (currentPage) => currentPage.getByRole('button', { name: /me want it|accept/i })
     },
     {
-      name: 'dashboard heading',
-      build: (currentPage) => currentPage.getByRole('heading', { name: /dashboard|welcome/i })
+      name: 'cookie button fallback',
+      build: (currentPage) => currentPage.getByText(/me want it/i)
+    }
+  ]);
+  await dismissCookieButton.click();
+
+  const dismissWelcomeButton = await resolveSelfHealingLocator(page, [
+    {
+      name: 'welcome close button aria',
+      build: (currentPage) => currentPage.getByRole('button', { name: /close welcome banner/i })
     },
     {
-      name: 'dashboard text fallback',
-      build: (currentPage) => currentPage.getByText(/dashboard|welcome back/i)
+      name: 'welcome close generic button',
+      build: (currentPage) => currentPage.locator('button[aria-label*=close i]').first()
+    }
+  ]);
+  await dismissWelcomeButton.click();
+
+  const searchInput = await resolveSelfHealingLocator(page, [
+    {
+      name: 'search input by aria label',
+      build: (currentPage) => currentPage.getByRole('searchbox', { name: /search/i })
+    },
+    {
+      name: 'search input by placeholder',
+      build: (currentPage) => currentPage.getByPlaceholder(/search/i)
     }
   ]);
 
-  await expect(dashboardAnchor).toBeVisible();
-  await expectPageVisualMatch(page, 'dashboard-after-login.png');
+  await searchInput.fill('apple');
+
+  const productAnchor = await resolveSelfHealingLocator(page, [
+    {
+      name: 'apple product card title',
+      build: (currentPage) => currentPage.getByText(/apple juice/i)
+    },
+    {
+      name: 'generic product card fallback',
+      build: (currentPage) => currentPage.locator('mat-card, .product').first()
+    }
+  ]);
+
+  await expect(productAnchor).toBeVisible();
+  await expectPageVisualMatch(page, 'juice-shop-search-apple.png');
 
   await api.dispose();
 });
