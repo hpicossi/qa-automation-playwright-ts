@@ -55,20 +55,42 @@ copy .env.example .env
 
 ## Target real recomendado (Parte 2)
 
-- `BASE_URL=https://demo.owasp-juice.shop`
-- `API_BASE_URL=https://demo.owasp-juice.shop`
+- `BASE_URL=http://localhost:3000`
+- `API_BASE_URL=http://localhost:3000`
 
-El flujo híbrido usa endpoint público de productos para que puedas ejecutar demo sin credenciales privadas.
+## Levantar app local estable (recomendado)
+
+Prerequisito: Docker Desktop iniciado.
+
+```bash
+npm run app:up
+```
+
+Valida que esté disponible en `http://localhost:3000`.
+
+Para apagar:
+
+```bash
+npm run app:down
+```
 
 ## Ejecución
 
 ```bash
 npm test
+npm run test:local
 npm run test:mobile
 npm run test:api
 npm run test:visual
 npx playwright test tests/e2e/hybrid-ui-api-visual.spec.ts --project=chromium --headed
 ```
+
+Si el test headed falla, normalmente es porque la app local no está levantada.
+
+Fallback temporal (si Docker no está disponible):
+
+- `BASE_URL=https://demo.owasp-juice.shop`
+- `API_BASE_URL=https://demo.owasp-juice.shop`
 
 ## Appium (integración conceptual)
 

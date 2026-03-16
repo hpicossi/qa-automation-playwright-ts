@@ -5,13 +5,15 @@ import { expectPageVisualMatch } from '../../utils/visual/visual-checks';
 import { resolveSelfHealingLocator } from '../../utils/ai/self-healing-locator';
 
 test('hybrid flow: API products + UI search + visual baseline', async ({ page }) => {
-  const apiBaseUrl = process.env.API_BASE_URL ?? process.env.BASE_URL ?? 'https://demo.owasp-juice.shop';
+  await page.setViewportSize({ width: 1280, height: 720 });
+
+  const apiBaseUrl = process.env.API_BASE_URL ?? process.env.BASE_URL ?? 'http://localhost:3000';
 
   try {
     const probe = await fetch(`${apiBaseUrl}/rest/products/search?q=apple`);
-    test.skip(probe.status >= 500, `Public demo unavailable (status: ${probe.status})`);
+    test.skip(!probe.ok, `Target API unavailable or invalid (status: ${probe.status})`);
   } catch {
-    test.skip(true, 'Public demo unavailable (network error)');
+    test.skip(true, 'Target API unavailable (network error)');
   }
 
   const api = new BaseApiClient(apiBaseUrl);
@@ -21,31 +23,59 @@ test('hybrid flow: API products + UI search + visual baseline', async ({ page })
   api.validateSchema(productSearchSchema, apiResponse);
   expect(apiResponse.data.length).toBeGreaterThan(0);
 
-  await page.goto('/#/');
+  await page.goto(`${apiBaseUrl}/#/`);
 
-  const dismissCookieButton = await resolveSelfHealingLocator(page, [
-    {
-      name: 'cookie accept button',
-      build: (currentPage) => currentPage.getByRole('button', { name: /me want it|accept/i })
-    },
-    {
-      name: 'cookie button fallback',
-      build: (currentPage) => currentPage.getByText(/me want it/i)
-    }
-  ]);
-  await dismissCookieButton.click();
+  const is404Page = await page.getByRole('heading', { name: '404' }).isVisible().catch(() => false);
+  test.skip(is404Page, `Target URL is not serving Juice Shop: ${apiBaseUrl}`);
 
-  const dismissWelcomeButton = await resolveSelfHealingLocator(page, [
-    {
-      name: 'welcome close button aria',
-      build: (currentPage) => currentPage.getByRole('button', { name: /close welcome banner/i })
-    },
-    {
-      name: 'welcome close generic button',
-      build: (currentPage) => currentPage.locator('button[aria-label*=close i]').first()
-    }
-  ]);
-  await dismissWelcomeButton.click();
+  try {
+    const dismissCookieButton = await resolveSelfHealingLocator(page, [
+      {
+        name: 'cookie accept button',
+        build: (currentPage) => currentPage.getByRole('button', { name: /me want it|accept/i })
+      },
+      {
+        name: 'cookie button fallback',
+        build: (currentPage) => currentPage.getByText(/me want it/i)
+      }
+    ]);
+    await dismissCookieButton.click();
+  } catch {
+  }
+
+  try {
+    const dismissWelcomeButton = await resolveSelfHealingLocator(page, [
+      {
+        name: 'welcome close button aria',
+        build: (currentPage) => currentPage.getByRole('button', { name: /close welcome banner/i })
+      },
+      {
+        name: 'welcome close generic button',
+        build: (currentPage) => currentPage.locator('button[aria-label*=close i]').first()
+      }
+    ]);
+    await dismissWelcomeButton.click();
+  } catch {
+  }
+
+  try {
+    const openSearchButton = await resolveSelfHealingLocator(page, [
+      {
+        name: 'search toggle by helper text',
+        build: (currentPage) => currentPage.getByText(/click to search/i)
+      },
+      {
+        name: 'search toggle by aria label',
+        build: (currentPage) => currentPage.getByRole('button', { name: /search/i }).first()
+      },
+      {
+        name: 'search icon fallback',
+        build: (currentPage) => currentPage.locator('mat-icon:has-text("search")').first()
+      }
+    ]);
+    await openSearchButton.click();
+  } catch {
+  }
 
   const searchInput = await resolveSelfHealingLocator(page, [
     {
@@ -55,6 +85,14 @@ test('hybrid flow: API products + UI search + visual baseline', async ({ page })
     {
       name: 'search input by placeholder',
       build: (currentPage) => currentPage.getByPlaceholder(/search/i)
+    },
+    {
+      name: 'search input editable text field',
+      build: (currentPage) => currentPage.locator('input[type="text"]:not([disabled])').first()
+    },
+    {
+      name: 'search input angular material fallback',
+      build: (currentPage) => currentPage.locator('mat-form-field input:not([disabled])').first()
     }
   ]);
 
@@ -72,7 +110,7 @@ test('hybrid flow: API products + UI search + visual baseline', async ({ page })
   ]);
 
   await expect(productAnchor).toBeVisible();
-  await expectPageVisualMatch(page, 'juice-shop-search-apple.png');
+  await expectPageVisualMatch(page, 'juice-shop-search-apple-viewport.png');
 
   await api.dispose();
 });

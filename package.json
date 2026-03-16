@@ -4,8 +4,13 @@
   "private": true,
   "description": "Senior SDET automation framework with TypeScript + Playwright",
   "scripts": {
+    "app:up": "docker compose up -d",
+    "app:down": "docker compose down",
+    "app:logs": "docker compose logs -f juice-shop",
     "test": "playwright test",
     "test:headed": "playwright test --headed",
+    "test:local": "playwright test --project=chromium",
+    "test:update-snapshots": "playwright test --project=chromium --update-snapshots",
     "test:mobile": "playwright test --project=mobile-chromium --project=mobile-webkit",
     "test:api": "playwright test tests/api",
     "test:visual": "playwright test tests/visual",

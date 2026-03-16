@@ -3,7 +3,7 @@ import { BaseApiClient } from '../../utils/api/base-api.client';
 import { productSearchSchema, type ProductSearchResponse } from '../../data/schemas/product-search.schema';
 
 test('products search API returns valid public contract', async () => {
-  const apiBaseUrl = process.env.API_BASE_URL ?? process.env.BASE_URL ?? 'https://demo.owasp-juice.shop';
+  const apiBaseUrl = process.env.API_BASE_URL ?? process.env.BASE_URL ?? 'http://localhost:3000';
 
   try {
     const probe = await fetch(`${apiBaseUrl}/rest/products/search?q=apple`);
