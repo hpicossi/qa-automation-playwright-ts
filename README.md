@@ -87,6 +87,32 @@ npx playwright test tests/e2e/hybrid-ui-api-visual.spec.ts --project=chromium --
 
 Si el test headed falla, normalmente es porque la app local no está levantada.
 
+## Comandos recomendados por escenario
+
+### Demo en vivo (navegador visible)
+
+```bash
+npx playwright test --project=chromium --headed --grep "hybrid flow"
+```
+
+### Ejecución tipo CI / local headless
+
+```bash
+npx playwright test --project=chromium --grep "hybrid flow"
+```
+
+### Regenerar baseline visual cuando cambie la UI intencionalmente
+
+```bash
+npm run test:update-snapshots
+```
+
+### Abrir reporte HTML
+
+```bash
+npx playwright show-report
+```
+
 Fallback temporal (si Docker no está disponible):
 
 - `BASE_URL=https://demo.owasp-juice.shop`
