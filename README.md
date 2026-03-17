@@ -85,6 +85,7 @@ npm run app:down
 npm test
 npm run test:local
 npm run test:auth
+npm run test:demo
 npm run test:mobile
 npm run test:api
 npm run test:visual
@@ -175,3 +176,8 @@ Este proyecto me ayudó a reforzar buenas prácticas de diseño de framework, ma
 Repo: [pega aquí tu URL]
 
 #QA #SDET #Playwright #TypeScript #TestAutomation #E2E #APItesting #QualityEngineering
+
+## Recursos de portafolio
+
+- Checklist de evidencia: [PORTFOLIO_CHECKLIST.md](docs/PORTFOLIO_CHECKLIST.md)
+- Plantilla de publicación: [LINKEDIN_POST.md](docs/LINKEDIN_POST.md)
